@@ -21,16 +21,58 @@ The meaning of buttons (S, M, R) is somewhat unusual:
 The M button takes precedence over S, which in turn takes precedence over R.
 
 
-## How to use it?
-1. Open the file nanoKONTROL2.scd in SuperCollider.
-2. Check, if `~nK2_MAGSRC` is set to a correct value.
-3. Run the code!
+
+## Installation
+Put a copy of nanoKONTROLL2.sc in your SuperCollider extensions directory,
+recompile class library (Ctrl+Shift+L).
+
+## Usage
+Create a new instance of the class: `n = NanoKONTROL2(\key)`.
+Access knobs and faders by n.faders and n.knobs, two-dimensional arrays, for
+which the first index denotes the scene number. You can treat each element
+of the arrays as a UGen at control rate by adding .kr message.  Use it in
+your SynthDefs. For instance, `n.knobs[2][7].kr` gives you current value of
+the 8th knob in the 3rd scene.
+
+
+### Example (assuming you are happy with all default values):
+```SuperCollider
+
+(
+o = Server.internal.options;
+Server.default = s = Server.internal.reboot;
+)
+
+MIDIClient.init;
+MIDIIn.connectAll;
+MIDIFunc.trace;
+
+n = NanoKONTROL2(s, \NK2);
+
+(
+Ndef(
+     \NK2_test, { | freq = 440 |
+         Out.ar(0, Pan2.ar(
+             SinOsc.ar( freq,
+                 mul: n.faders[0][3].kr.linexp(0,1,0.0005,1)
+             ),
+             pos: n.knobs[2][2].kr.linlin(0,1 ,-1,1) )
+         );
+     }
+);
+)
+Ndef(\NK2_test).pause;
+Ndef(\NK2_test).resume;
+Ndef(\NK2_test).free;
+
+n.free;
+s.quit;
+```
 
 
 ## TODO
 1. Find use for the rest of the buttons.
-2. Rewrite the code as a class.
-3. LEDs
+2. LEDs
 
 
 ## Authors
@@ -38,5 +80,5 @@ Marek Miller, <marek.l.miller@gmail.com>
 
 
 ## License
-This sofware is under MIT license.  Feel free to use it!  For more information, see [LICENSE](./LICENSE).
+This software is under MIT license.  Feel free to use it!  For more information, see [LICENSE](./LICENSE).
 
