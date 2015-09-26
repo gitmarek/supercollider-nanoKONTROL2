@@ -4,14 +4,14 @@ SuperCollider MIDI handlers for KORG nanoKONTROL2.
 The code reads controller MIDI data and maps them linearly (0,127) -> (0,1)
 to buses at control rate.
 
-If a scene changes (by pressing Tracks buttons) then the knobs or faders
+If a scene changes (by pressing Track buttons) then the knobs or faders
 have to be set at the previous value for that scene, so they do not
 jump discontinuously.
 
 The meaning of buttons (S, M, R) is somewhat unusual:
 
 1. if S (slow) is pressed, then the adjacent fader or knob reacts to
-   changes very slowly (10 times slower);
+   changes very slowly around the previous value;
 2. if M (mute) is pressed, then the adjacent fader or knob does not react
    to changes until the button is released; then it assumes a new value
    in a discontinuous way;
@@ -29,7 +29,7 @@ The M button takes precedence over S, which in turn takes precedence over R.
 2. LEDs
 
 ## Authors
-Marek Miller <marek.l.miller@gmail.com>
+Marek Miller, <marek.l.miller@gmail.com>
 
 ## License
 This sofware is under MIT license.  Feel free to use it!  For more information, see [LICENSE](./LICENSE).
