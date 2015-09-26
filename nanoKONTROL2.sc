@@ -75,12 +75,8 @@ NanoKONTROL2 {
 
     // variables and default values
     var
-    <server,
-    <key = \nK2,
-    <magic_src_num = 1310720,
-    <num_of_scenes = 4,
-    <knobs_init_val = 0.5,
-    <faders_init_val = 0,
+    <server, <key, <magic_src_num, <num_of_scenes,
+    <knobs_init_val, <faders_init_val,
 
     <>sbutton_slow_factor = 0.1,
 
@@ -106,12 +102,27 @@ NanoKONTROL2 {
 
 
 
-    *new { |... args|
-        ^super.newCopyArgs(*args).initNanoKONTROL2;
+    *new { arg
+        server,
+        key = \nK2,
+        magic_src_num = 1310720,
+        num_of_scenes = 4,
+        knobs_init_val = 0.5,
+        faders_init_val = 0,
+        button_slow_factor = 0.1;
+
+        ^super.new.initNanoKONTROL2(server, key,
+            magic_src_num, num_of_scenes,
+            knobs_init_val, faders_init_val,
+            button_slow_factor
+        );
     }
 
 
-    initNanoKONTROL2{
+    initNanoKONTROL2 { arg server, key,
+            magic_src_num, num_of_scenes,
+            knobs_init_val, faders_init_val,
+            button_slow_factor;
 
 
         knobs = Array.fill(num_of_scenes, {Array.fill(nk2num, { arg i; NanoKONTROL2Knob(server, knobs_init_val) }) });
