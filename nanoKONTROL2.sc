@@ -9,7 +9,7 @@
 // jump discontinuously.
 // The meaning of buttons (S, M, R) is somewhat unusual:
 //   1. if S (slow) is pressed, then the adjacent fader or knob reacts to
-//      changes very slowly (sbutton_slow_factor = 0.1 times slower) around
+//      changes very slowly (button_slow_factor = 0.1 times slower) around
 //      the previous value;
 //   2. if M (mute) is pressed, then the adjacent fader or knob does not react
 //      to changes until the button is released; then it assumes a new value
@@ -81,12 +81,15 @@ NanoKONTROL2 {
     <server, <srcID, <num_of_scenes,
     <knobs_init_val, <faders_init_val,
 
-    <>sbutton_slow_factor = 0.1,
+    <>button_slow_factor,
+
+    <>verbose,
 
     <>scene = 0,
     <knobs, <faders,
 
     <sbuttons, <mbuttons, <rbuttons,
+
 
     key_mididef;
 
@@ -112,21 +115,31 @@ NanoKONTROL2 {
 
         knobs_init_val = 0.5,
         faders_init_val = 0,
-        button_slow_factor = 0.1;
+        button_slow_factor = 0.1,
+        verbose = 0;
 
         ^super.new.initNanoKONTROL2(server,
             srcID, num_of_scenes,
             knobs_init_val, faders_init_val,
-            button_slow_factor
+            button_slow_factor,
+            verbose
         );
     }
 
 
-    initNanoKONTROL2 { arg server,
-            srcID, num_of_scenes,
-            knobs_init_val, faders_init_val,
-            button_slow_factor;
+    initNanoKONTROL2 { arg arg_server,
+            arg_srcID, arg_num_of_scenes,
+            arg_knobs_init_val, arg_faders_init_val,
+            arg_button_slow_factor, arg_verbose;
 
+
+        server = arg_server;
+        srcID = arg_srcID;
+        num_of_scenes = arg_num_of_scenes;
+        knobs_init_val  = arg_knobs_init_val;
+        faders_init_val = arg_faders_init_val;
+        button_slow_factor = arg_button_slow_factor;
+        verbose = arg_verbose;
 
         knobs = Array.fill(num_of_scenes, {Array.fill(nk2num, { arg i; NanoKONTROL2Knob(server, knobs_init_val) }) });
         faders = Array.fill(num_of_scenes, {Array.fill(nk2num, { arg i; NanoKONTROL2Fader(server, faders_init_val) }) });
@@ -158,7 +171,7 @@ NanoKONTROL2 {
                     };
                 };
 
-                ("nanoKONTROL2 (srcID: " + srcID + ") current scene: " + scene + "/" + num_of_scenes ).postln;
+                ("nK2, srcID:" + srcID + ", current scene:" + scene + "/" + num_of_scenes ).postln;
             });
 
 
@@ -210,7 +223,7 @@ NanoKONTROL2 {
                     });
 
                     if ( (sbuttons[cc - knobs_note].val == 1), {
-                        p = (val.linlin(0,127,0,1) - knobs[scene][cc - knobs_note].tmpSval)*sbutton_slow_factor +
+                        p = (val.linlin(0,127,0,1) - knobs[scene][cc - knobs_note].tmpSval)*button_slow_factor +
                              knobs[scene][cc - knobs_note].tmpSval;
                         p = max(0,p);
                         p = min(p, 1);
@@ -218,6 +231,10 @@ NanoKONTROL2 {
 
                     if ( (mbuttons[cc - knobs_note].val == 0), {
                         knobs[scene][cc - knobs_note].prev = p;
+
+                       if( (this.verbose == 1), {
+                            ("nK2, srcID: " ++ srcID.asString ++ ", scene: " ++ scene.asString ++ ", knob: " ++ (cc - knobs_note).asString ++ ", val: " ++ p).postln;
+                       });
                     });
 
                 }, {
@@ -245,7 +262,7 @@ NanoKONTROL2 {
                     });
 
                     if ( (sbuttons[cc - faders_note].val == 1), {
-                        p = (val.linlin(0,127,0,1) - faders[scene][cc - faders_note].tmpSval)*sbutton_slow_factor +
+                        p = (val.linlin(0,127,0,1) - faders[scene][cc - faders_note].tmpSval)*button_slow_factor +
                              faders[scene][cc - faders_note].tmpSval;
                         p = max(0,p);
                         p = min(p, 1);
@@ -253,6 +270,10 @@ NanoKONTROL2 {
 
                     if ( (mbuttons[cc - faders_note].val == 0), {
                         faders[scene][cc - faders_note].prev = p;
+
+                        if( (this.verbose == 1), {
+                            ("nK2, srcID: " ++ srcID.asString ++ ", scene: " ++ scene.asString ++ ", fader: " ++ (cc - faders_note).asString ++ ", val: " ++ p).postln;
+                        });
                     });
 
 
@@ -271,6 +292,18 @@ NanoKONTROL2 {
         }, srcID: srcID); // end of MIDIdef for knobs and faders
         // ------------------------------------------------------------
 
+    }
+
+
+    dumpValues {
+
+        ("nK2, srcID: " ++ srcID.asString).postln;
+
+        num_of_scenes.do{ arg i;
+            nk2num.do{ arg j;
+                ("scene: " ++ i.asString ++ ", knob" ++ j.asString ++ ": " ++ knobs[i][j].val ++ ", fader" ++ j.asString ++ ": " ++ faders[i][j].val).postln;
+            }
+        }
     }
 
 

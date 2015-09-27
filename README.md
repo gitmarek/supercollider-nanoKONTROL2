@@ -34,6 +34,9 @@ of the arrays as a UGen at control rate by adding .kr message.  Use it in
 your SynthDefs. For instance, `n.knobs[2][7].kr` gives you current value of
 the 8th knob in the 3rd scene.
 
+Keep in mind that as long as the software version is less then 1.0,
+backward compatibility could be broken from one 0.x version to the next.
+
 
 ### Example (assuming you are happy with all default values):
 ```SuperCollider
