@@ -21,8 +21,8 @@
 //
 //
 // This class assumes that MIDI interface is already connected (through e.g.
-// MIDIIn.connectAll) and you know the magical source number for incoming MIDI
-// messages. In my case it is 1310720.  Check this before you use the class.
+// MIDIIn.connectAll) and you know the srcID number of the port your device is
+// connected to. See example below.
 // ----------------------------------------------------------------------------
 //
 // How to use it
@@ -44,9 +44,12 @@
 //
 // MIDIClient.init;
 // MIDIIn.connectAll;
+// MIDIClient.sources;
+// // suppose your device is connected to port 3:
+// ~nK2srcID = MIDIClient.sources[3].uid; // this is your srcID number.
 // MIDIFunc.trace;
 //
-// n = NanoKONTROL2(s, \NK2);
+// n = NanoKONTROL2(s, \NK2, srcID: ~nK2srcID);
 //
 // (
 // Ndef(
@@ -75,7 +78,7 @@ NanoKONTROL2 {
 
     // variables and default values
     var
-    <server, <key, <magic_src_num, <num_of_scenes,
+    <server, <key, <srcID, <num_of_scenes,
     <knobs_init_val, <faders_init_val,
 
     <>sbutton_slow_factor = 0.1,
@@ -105,14 +108,14 @@ NanoKONTROL2 {
     *new { arg
         server,
         key = \nK2,
-        magic_src_num = 1310720,
+        srcID = 1310720,
         num_of_scenes = 4,
         knobs_init_val = 0.5,
         faders_init_val = 0,
         button_slow_factor = 0.1;
 
         ^super.new.initNanoKONTROL2(server, key,
-            magic_src_num, num_of_scenes,
+            srcID, num_of_scenes,
             knobs_init_val, faders_init_val,
             button_slow_factor
         );
@@ -120,7 +123,7 @@ NanoKONTROL2 {
 
 
     initNanoKONTROL2 { arg server, key,
-            magic_src_num, num_of_scenes,
+            srcID, num_of_scenes,
             knobs_init_val, faders_init_val,
             button_slow_factor;
 
@@ -136,8 +139,6 @@ NanoKONTROL2 {
 
         // define MIDIdef
         MIDIdef.cc(key_mididef,  { arg val, cc, chan, src;
-
-            if( ( src == magic_src_num), {
 
             // change the scene
             if ( (cc == scene_dim_note) || (cc == scene_inc_note) && (val == 127), {
@@ -265,9 +266,8 @@ NanoKONTROL2 {
                 faders[scene][cc - faders_note].set_asprev;
 
             });
-            });
 
-        });
+        }, srcID: srcID);
 
     }
 
@@ -283,11 +283,6 @@ NanoKONTROL2 {
         };
 
         ^super.free;
-    }
-
-
-    printOn { arg stream;
-        stream << "NK2 class instance, key: \\" << key << ".";
     }
 
 }
@@ -355,4 +350,4 @@ NanoKONTROL2Button {
     }
 
 }
-    
+
