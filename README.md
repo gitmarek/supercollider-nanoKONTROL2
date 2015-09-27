@@ -27,7 +27,7 @@ Put a copy of nanoKONTROLL2.sc in your SuperCollider extensions directory,
 recompile class library (Ctrl+Shift+L).
 
 ## Usage
-Create a new instance of the class: `n = NanoKONTROL2(server, \key)`.
+Create a new instance of the class: `n = NanoKONTROL2(server)`.
 Access knobs and faders by n.faders and n.knobs, two-dimensional arrays, for
 which the first index denotes the scene number. You can treat each element
 of the arrays as a UGen at control rate by adding .kr message.  Use it in
@@ -50,7 +50,7 @@ MIDIClient.sources;
 ~nK2srcID = MIDIClient.sources[3].uid; // this is your srcID number.
 MIDIFunc.trace;
 
-n = NanoKONTROL2(s, \NK2, srcID: ~nK2srcID);
+n = NanoKONTROL2(s, srcID: ~nK2srcID);
 
 (
 Ndef(

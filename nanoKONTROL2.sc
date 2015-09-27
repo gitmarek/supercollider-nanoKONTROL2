@@ -27,7 +27,7 @@
 //
 // How to use it
 // -------------
-// Create a new instance of the class: n = NanoKONTROL2(server, \key).
+// Create a new instance of the class: n = NanoKONTROL2(server).
 // Access knobs and faders by n.faders and n.knobs, two-dimensional arrays, for
 // which the first index denotes the scene number. You can treat each element
 // of the arrays as a UGen at control rate by adding .kr message.  Use it in
@@ -49,7 +49,7 @@
 // ~nK2srcID = MIDIClient.sources[3].uid; // this is your srcID number.
 // MIDIFunc.trace;
 //
-// n = NanoKONTROL2(s, \NK2, srcID: ~nK2srcID);
+// n = NanoKONTROL2(s, srcID: ~nK2srcID);
 //
 // (
 // Ndef(
@@ -78,7 +78,7 @@ NanoKONTROL2 {
 
     // variables and default values
     var
-    <server, <key, <srcID, <num_of_scenes,
+    <server, <srcID, <num_of_scenes,
     <knobs_init_val, <faders_init_val,
 
     <>sbutton_slow_factor = 0.1,
@@ -107,14 +107,14 @@ NanoKONTROL2 {
 
     *new { arg
         server,
-        key = \nK2,
         srcID = 1310720,
         num_of_scenes = 4,
+
         knobs_init_val = 0.5,
         faders_init_val = 0,
         button_slow_factor = 0.1;
 
-        ^super.new.initNanoKONTROL2(server, key,
+        ^super.new.initNanoKONTROL2(server,
             srcID, num_of_scenes,
             knobs_init_val, faders_init_val,
             button_slow_factor
@@ -122,7 +122,7 @@ NanoKONTROL2 {
     }
 
 
-    initNanoKONTROL2 { arg server, key,
+    initNanoKONTROL2 { arg server,
             srcID, num_of_scenes,
             knobs_init_val, faders_init_val,
             button_slow_factor;
@@ -135,9 +135,10 @@ NanoKONTROL2 {
         mbuttons = Array.fill(nk2num, { arg i; NanoKONTROL2Button(0) });
         rbuttons = Array.fill(nk2num, { arg i; NanoKONTROL2Button(0) });
 
-        key_mididef = key ++ "mididef";
+        key_mididef = "nK2" ++ srcID;
 
-        // define MIDIdef
+        // ------------------------------------------------------------
+        // define MIDIdef for knobs and faders
         MIDIdef.cc(key_mididef,  { arg val, cc, chan, src;
 
             // change the scene
@@ -157,7 +158,7 @@ NanoKONTROL2 {
                     };
                 };
 
-                (key ++ " current scene: " + scene).postln;
+                ("nanoKONTROL2 (srcID: " + srcID + ") current scene: " + scene + "/" + num_of_scenes ).postln;
             });
 
 
@@ -267,7 +268,8 @@ NanoKONTROL2 {
 
             });
 
-        }, srcID: srcID);
+        }, srcID: srcID); // end of MIDIdef for knobs and faders
+        // ------------------------------------------------------------
 
     }
 
