@@ -210,10 +210,10 @@ NanoKONTROL2 {
                     });
 
                     if ( (sbuttons[cc - knobs_note].val == 1), {
-                        p = val.linlin(0,127,
-                            max(0, knobs[scene][cc - knobs_note].tmpSval - sbutton_slow_factor),
-                            min(1, knobs[scene][cc - knobs_note].tmpSval + sbutton_slow_factor)
-                        );
+                        p = (val.linlin(0,127,0,1) - knobs[scene][cc - knobs_note].tmpSval)*sbutton_slow_factor +
+                             knobs[scene][cc - knobs_note].tmpSval;
+                        p = max(0,p);
+                        p = min(p, 1);
                     });
 
                     if ( (mbuttons[cc - knobs_note].val == 0), {
@@ -245,10 +245,10 @@ NanoKONTROL2 {
                     });
 
                     if ( (sbuttons[cc - faders_note].val == 1), {
-                        p = val.linlin(0,127,
-                                max(0, faders[scene][cc - faders_note].tmpSval - sbutton_slow_factor),
-                                min(1, faders[scene][cc - faders_note].tmpSval + sbutton_slow_factor)
-                        );
+                        p = (val.linlin(0,127,0,1) - faders[scene][cc - faders_note].tmpSval)*sbutton_slow_factor +
+                             faders[scene][cc - faders_note].tmpSval;
+                        p = max(0,p);
+                        p = min(p, 1);
                     });
 
                     if ( (mbuttons[cc - faders_note].val == 0), {
