@@ -10,9 +10,13 @@ switch between *device* and *mixer* mode, the latter being more traditional.
 
 ## Instructions how to operate the device
 
-If a scene changes (by pressing Track buttons) to another one and then
-changes back, then the knobs or faders have to be set at the previous value
-for that scene, so they do not jump discontinuously.
+It is not a bad idea to set the state of the device to factory defaults
+before using it with this library.  This way you will be sure all the MIDI
+data coming from the device have standard values.  In order to do so, disconnect
+the device, then press three buttons: Cycle, and two Tracks, and connect it
+again while holding the buttons.  You will see the LEDs of the transport buttons
+blink.  Do not disconnect the device until the LEDs stop blinking, which usually
+lasts about two seconds.
 
 The meaning of buttons (S, M, R) is rather unusual:
 
@@ -26,6 +30,11 @@ The meaning of buttons (S, M, R) is rather unusual:
 
 The M button takes precedence over S, which in turn takes precedence over R.
 
+If a scene changes (by pressing Track buttons) to another one and then
+changes back, then the knobs or faders have to be set at the previous value
+for that scene, so they do not jump discontinuously.
+
+
 
 ## Installation
 Put a copy of `nanoKONTROLL2.sc` in your SuperCollider extensions directory,
@@ -33,6 +42,16 @@ recompile class library (Ctrl+Shift+L).
 
 
 ## Usage within SuperCollider
+First, connect the device by e.g. `MIDIIn.connectAll;`, find the uid of the
+port the controller is connected to and specify it as a `srcID` argument.
+If nanoKONTROL2 is connected to one of the out ports by i.e.
+`MIDIOut.connect(outport, device)`, where `device` is its position in the
+`MIDIClient.destinations` list, then you can specify the outport number as well
+in order to enable LED functionality.  The class will try to put nanoKONTROL2
+into the external LED mode.  If you want to return to the internal led mode
+(I have no idea, what for), please use KORG Kontrol Editor, or set the factory
+defaults for the device.
+
 The code reads controller MIDI data and maps them linearly to buses
 at control rate.  The data from faders is mapped to the interval `[0,1]`;
 whereas the data from knobs to `[-1,1]`.
@@ -63,7 +82,11 @@ MIDIClient.sources;
 ~nK2srcID = MIDIClient.sources[3].uid; // this is your srcID number.
 MIDIFunc.trace;
 
-n = NanoKONTROL2(s, srcID: ~nK2srcID);
+MIDIClient.destinations;
+// suppose your device is sencond on that list.
+MIDIOut.connect(0,1);
+
+n = NanoKONTROL2(s, srcID: ~nK2srcID, outport: 0);
 
 (
 Ndef(
