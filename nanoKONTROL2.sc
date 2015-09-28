@@ -169,7 +169,7 @@ NanoKONTROL2 {
                     };
                 };
 
-                ("nK2, srcID:" + srcID + ", current scene:" + scene + "/" + num_of_scenes ).postln;
+                ("nK2, srcID: " ++ srcID.asString ++ ", current scene: " ++ scene.asString ++ "/" ++ num_of_scenes.asString ++ ".").postln;
             });
 
 
@@ -335,6 +335,23 @@ NanoKONTROL2 {
     }
 
 
+    dumpScene{ arg scenenum;
+
+        if ( (scenenum >= 0) && (scenenum < num_of_scenes), {
+            ("nK2, srcID: " ++ srcID.asString ++ " scene: " ++ scenenum.asString ++ "/" ++ num_of_scenes.asString ++ ".").postln;
+            nk2num.do{ arg j;
+                ("knob" ++ j.asString ++ ": " ++ knobs[scenenum][j].val ++ ", fader" ++ j.asString ++ ": " ++ faders[scenenum][j].val).postln;
+            }
+        });
+
+    }
+
+
+    dumpCurrentScene{
+        this.dumpScene(scene);
+    }
+
+
     dumpAll {
 
         ("nK2, srcID: " ++ srcID.asString).postln;
@@ -345,6 +362,9 @@ NanoKONTROL2 {
             }
         }
     }
+
+
+
 
 
     free {

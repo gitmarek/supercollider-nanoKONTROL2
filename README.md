@@ -67,7 +67,8 @@ the 8th knob in the 3rd scene.
 **backward compatibility could be broken from one 0.x version to the next.**
 
 
-### Example (assuming you are happy with all default values):
+### Example
+
 ```SuperCollider
 
 (
