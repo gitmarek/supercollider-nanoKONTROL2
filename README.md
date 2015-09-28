@@ -1,14 +1,20 @@
 # supercollider-nanoKONTROL2
 SuperCollider MIDI handlers for KORG nanoKONTROL2.
 
-The code reads controller MIDI data and maps them linearly (0,127) -> (0,1)
-to buses at control rate.
+The purpose of this library is to make possible for the MIDI device to easily
+control instruments with multiple parameters, and not to serve as a mixing
+board.  Hence somewhat unorthodox approach to storing MIDI data and to what
+different parts of the device mean.  In the future, it will be possible to
+switch between *device* and *mixer* mode, the latter being more traditional.
+
+
+## Instructions how to operate the device
 
 If a scene changes (by pressing Track buttons) to another one and then
 changes back, then the knobs or faders have to be set at the previous value
 for that scene, so they do not jump discontinuously.
 
-The meaning of buttons (S, M, R) is somewhat unusual:
+The meaning of buttons (S, M, R) is rather unusual:
 
 1. if S (slow) is pressed, then the adjacent fader or knob reacts to
    changes very slowly around the previous value;
@@ -21,12 +27,15 @@ The meaning of buttons (S, M, R) is somewhat unusual:
 The M button takes precedence over S, which in turn takes precedence over R.
 
 
-
 ## Installation
 Put a copy of nanoKONTROLL2.sc in your SuperCollider extensions directory,
 recompile class library (Ctrl+Shift+L).
 
-## Usage
+
+## Usage within SuperCollider
+The code reads controller MIDI data and maps them linearly (0,127) -> (0,1)
+to buses at control rate.
+
 Create a new instance of the class: `n = NanoKONTROL2(server)`.
 Access knobs and faders by n.faders and n.knobs, two-dimensional arrays, for
 which the first index denotes the scene number. You can treat each element
@@ -60,9 +69,9 @@ Ndef(
      \NK2_test, { | freq = 440 |
          Out.ar(0, Pan2.ar(
              SinOsc.ar( freq,
-                 mul: n.faders[0][3].kr.linexp(0,1,0.0005,1)
+                 mul: n.faders[0][3].kr.linexp(0,1,0.01,1)
              ),
-             pos: n.knobs[2][2].kr.linlin(0,1 ,-1,1) )
+             pos: n.knobs[2][2].kr*2 - 1)
          );
      }
 );
@@ -75,16 +84,11 @@ n.free;
 s.quit;
 ```
 
-
-## TODO
-1. Find use for the rest of the buttons.
-2. LEDs
-
-
 ## Authors
 Marek Miller, <marek.l.miller@gmail.com>
 
 
 ## License
-This software is under MIT license.  Feel free to use it!  For more information, see [LICENSE](./LICENSE).
+This software licensed is under the MIT license. Feel free to use it however
+you like!  For more information, see [LICENSE](./LICENSE).
 
