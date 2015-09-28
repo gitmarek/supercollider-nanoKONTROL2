@@ -16,19 +16,19 @@ for that scene, so they do not jump discontinuously.
 
 The meaning of buttons (S, M, R) is rather unusual:
 
-1. if S (slow) is pressed, then the adjacent fader or knob reacts to
-   changes very slowly around the previous value;
-2. if M (mute) is pressed, then the adjacent fader or knob does not react
-   to changes until the button is released; then it assumes a new value
-   in a discontinuous way;
-3. if R (random) is pressed and adjacent knob of fader is touched at
-   the right value, then it assumes a random value from (0,1).
+* if S (slow) is pressed, then the adjacent fader or knob reacts to
+  changes very slowly around the previous value;
+* if M (mute) is pressed, then the adjacent fader or knob does not react
+  to changes until the button is released; then it assumes a new value
+  in a discontinuous way;
+* if R (random) is pressed and adjacent knob of fader is touched at
+  the right value, then it assumes a random value from (0,1).
 
 The M button takes precedence over S, which in turn takes precedence over R.
 
 
 ## Installation
-Put a copy of nanoKONTROLL2.sc in your SuperCollider extensions directory,
+Put a copy of `nanoKONTROLL2.sc` in your SuperCollider extensions directory,
 recompile class library (Ctrl+Shift+L).
 
 
@@ -38,14 +38,14 @@ at control rate.  The data from faders is mapped to the interval `[0,1]`;
 whereas the data from knobs to `[-1,1]`.
 
 Create a new instance of the class: `n = NanoKONTROL2(server)`.
-Access knobs and faders by n.faders and n.knobs, two-dimensional arrays, for
-which the first index denotes the scene number. You can treat each element
-of the arrays as a UGen at control rate by adding .kr message.  Use it in
+Access knobs and faders by `n.faders` and `n.knobs`, two-dimensional arrays,
+for which the first index denotes the scene number. You can treat each element
+of the arrays as a UGen at control rate by adding `.kr` message.  Use it in
 your SynthDefs. For instance, `n.knobs[2][7].kr` gives you current value of
 the 8th knob in the 3rd scene.
 
-Keep in mind that as long as the software version is less then 1.0,
-backward compatibility could be broken from one 0.x version to the next.
+**Keep in mind that as long as the software version is less then 1.0,**
+**backward compatibility could be broken from one 0.x version to the next.**
 
 
 ### Example (assuming you are happy with all default values):

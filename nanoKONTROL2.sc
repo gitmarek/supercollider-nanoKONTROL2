@@ -67,7 +67,7 @@ NanoKONTROL2 {
         srcID = 1310720,
         num_of_scenes = 4,
 
-        knobs_init_val = 0.5,
+        knobs_init_val = 0,
         faders_init_val = 0,
         button_slow_factor = 0.1,
         verbose = 0;
@@ -285,18 +285,21 @@ NanoKONTROL2 {
 NanoKONTROL2Control {
 
     var
-    server,
-    init_val = 0,
-    <val = 0, <>prev = 0, <>matched = 0,
+    <server,
+    <init_val,
+    <val, <>prev, <>matched = 0,
     <bus,
 
     <>tmpSval = 0;
 
-    *new { arg server, init_val;
-        ^super.newCopyArgs(server, init_val).initNK2Control;
+    *new { arg server, init_val = 0;
+        ^super.new.initNK2Control(server, init_val);
     }
 
-    initNK2Control {
+    initNK2Control { arg arg_server, arg_init_val;
+        server = arg_server;
+        init_val = arg_init_val;
+
         prev = init_val;
         val = init_val;
         bus = Bus.control(server, 1);
