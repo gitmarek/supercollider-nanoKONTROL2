@@ -30,10 +30,12 @@ The meaning of buttons (S, M, R) is rather unusual:
 
 The M button takes precedence over S, which in turn takes precedence over R.
 
+The are a number of scenes, each for independent set of eight knobs and faders.
 If a scene changes (by pressing Track buttons) to another one and then
 changes back, then the knobs or faders have to be set at the previous value
-for that scene, so they do not jump discontinuously.
-
+for the first scene, so they do not jump discontinuously.  If this value is set,
+so that a knob or fader is active, a LED turns on: adjacent S button LED for
+knobs and M button LED for faders.
 
 
 ## Installation

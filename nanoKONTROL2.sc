@@ -42,6 +42,7 @@ NanoKONTROL2 {
 
     <>scene = 0,
     <knobs, <faders,
+    <knobs_lastval, <faders_lastval,
 
     <sbuttons, <mbuttons, <rbuttons,
 
@@ -110,34 +111,35 @@ NanoKONTROL2 {
         });
 
 
-        knobs = Array.fill(num_of_scenes, {Array.fill(nk2num, { arg i; NanoKONTROL2Knob(server, knobs_init_val) }) });
-        faders = Array.fill(num_of_scenes, {Array.fill(nk2num, { arg i; NanoKONTROL2Fader(server, faders_init_val) }) });
+        sbuttons = Array.fill(num_of_scenes, {arg i; Array.fill(nk2num, { arg j; NanoKONTROL2Button(sbutton_note + j, outport) }) });
+        mbuttons = Array.fill(num_of_scenes, {arg i; Array.fill(nk2num, { arg j; NanoKONTROL2Button(mbutton_note + j, outport) }) });
+        rbuttons = Array.fill(num_of_scenes, {arg i; Array.fill(nk2num, { arg j; NanoKONTROL2Button(rbutton_note + j, outport) }) });
 
-        sbuttons = Array.fill(num_of_scenes, {Array.fill(nk2num, { arg i; NanoKONTROL2Button(sbutton_note + i, outport) }) });
-        mbuttons = Array.fill(num_of_scenes, {Array.fill(nk2num, { arg i; NanoKONTROL2Button(mbutton_note + i, outport) }) });
-        rbuttons = Array.fill(num_of_scenes, {Array.fill(nk2num, { arg i; NanoKONTROL2Button(rbutton_note + i, outport) }) });
+        knobs = Array.fill(num_of_scenes, { arg i; Array.fill(nk2num, { arg j; NanoKONTROL2Knob(server, knobs_init_val, matched_led: sbuttons[i][j].led) }) });
+        faders = Array.fill(num_of_scenes, { arg i; Array.fill(nk2num, { arg j; NanoKONTROL2Fader(server, faders_init_val, matched_led: mbuttons[i][j].led) }) });
+
+        knobs_lastval = Array.fill(nk2num, { arg j; 0 });
+        faders_lastval = Array.fill(nk2num, { arg j; 0 });
 
         mididef_kf_key = "nK2_" ++ srcID.asString ++ "_default";
         this.nK2_kf_mididef(mididef_kf_key);
-
-
 
         // Welcoming lights!
         if ( (outport != nil), {
             Task( {
                 8.do{ arg i;
                     sbuttons[scene][i].led.blink;
-                    0.05.wait;
+                    0.04.wait;
                 };
-                0.5.wait;
+                0.3.wait;
                 8.do{ arg i;
                     mbuttons[scene][7-i].led.blink;
-                    0.05.wait;
+                    0.04.wait;
                 };
-                0.5.wait;
+                0.3.wait;
                 8.do{ arg i;
                     rbuttons[scene][i].led.blink;
-                    0.05.wait;
+                    0.04.wait;
                 };
             }).play;
         });
@@ -162,12 +164,21 @@ NanoKONTROL2 {
                 });
 
 
-                num_of_scenes.do{ arg i;
-                    nk2num.do{ arg j;
-                        knobs[i][j].matched = 0;
-                        faders[i][j].matched = 0;
-                    };
+                nk2num.do{ arg j;
+                    knobs[scene][j].matched = 0;
+                    faders[scene][j].matched = 0;
                 };
+
+                nk2num.do{ arg j;
+                    if ( (knobs[scene][j].val == knobs_lastval[j]), {
+                        knobs[scene][j].matched = 1;
+                    });
+
+                    if ( (faders[scene][j].val == faders_lastval[j]), {
+                        faders[scene][j].matched = 1;
+                    });
+                };
+
 
                 ("nK2, srcID: " ++ srcID.asString ++ ", current scene: " ++ scene.asString ++ "/" ++ num_of_scenes.asString ++ ".").postln;
             });
@@ -183,8 +194,12 @@ NanoKONTROL2 {
 
                 if ( (val == 0), {
                     // then it must have been pressed and released just now
-                    knobs[scene][cc - sbutton_note].matched = 0;
-                    faders[scene][cc - sbutton_note].matched = 0;
+                    if ( (knobs_lastval[cc - sbutton_note] != knobs[scene][cc - sbutton_note].val), {
+                        knobs[scene][cc - sbutton_note].matched = 0;
+                    });
+                    if ( (faders_lastval[cc - sbutton_note] != faders[scene][cc - sbutton_note].val), {
+                        faders[scene][cc - sbutton_note].matched = 0;
+                    });
                 });
 
             });
@@ -202,8 +217,12 @@ NanoKONTROL2 {
 
                 if ( (val == 0), {
                     // then it must have been pressed and released just now
-                    knobs[scene][cc - rbutton_note].matched = 0;
-                    faders[scene][cc - rbutton_note].matched = 0;
+                    if ( (knobs_lastval[cc - rbutton_note] != knobs[scene][cc - rbutton_note].val), {
+                        knobs[scene][cc - rbutton_note].matched = 0;
+                    });
+                    if ( (faders_lastval[cc - rbutton_note] != faders[scene][cc - rbutton_note].val), {
+                        faders[scene][cc - rbutton_note].matched = 0;
+                    });
                 });
             });
 
@@ -211,9 +230,10 @@ NanoKONTROL2 {
             // knobs
             if ( (cc >= knobs_note) && (cc <= (knobs_note + nk2num - 1)), {
 
-               if( ( knobs[scene][cc - knobs_note].matched == 1), {
+               var p = val.linlin(0,127,-1,1);
+               knobs_lastval[cc - knobs_note] = p;
 
-                    var p = val.linlin(0,127,-1,1);
+               if( ( knobs[scene][cc - knobs_note].matched == 1), {
 
                     if ( (rbuttons[scene][cc - knobs_note].val == 1), {
                         // TODO: smooth the randomness a little bit
@@ -251,9 +271,10 @@ NanoKONTROL2 {
             // faders
             if ( (cc >= faders_note) && (cc <= (faders_note + nk2num - 1) ), {
 
-               if( ( faders[scene][cc - faders_note].matched == 1), {
+               var p = val.linlin(0,127,0,1);
+               faders_lastval[cc - faders_note] = p;
 
-                    var p = val.linlin(0,127,0,1);
+               if( ( faders[scene][cc - faders_note].matched == 1), {
 
                     if ( (rbuttons[scene][cc - faders_note].val == 1), {
                         p = 1.0.rand;
@@ -389,25 +410,35 @@ NanoKONTROL2Control {
     var
     <server,
     <init_val,
-    <val, <>prev, <>matched = 0,
+    <val = nil, <>prev, <matched = 0,
     <bus,
 
-    <>tmpSval = 0;
+    <>tmpSval = 0,
+    <matched_led = nil;
 
-    *new { arg server, init_val = 0;
-        ^super.new.initNK2Control(server, init_val);
+    *new { arg server, init_val = 0, matched_led = nil;
+        ^super.new.initNK2Control(server, init_val, matched_led);
     }
 
-    initNK2Control { arg arg_server, arg_init_val;
+    initNK2Control { arg arg_server, arg_init_val, arg_matched_led;
         server = arg_server;
         init_val = arg_init_val;
+        matched_led = arg_matched_led;
 
         prev = init_val;
-        val = init_val;
+        // val = init_val;
         bus = Bus.control(server, 1);
         bus.set(init_val);
     }
 
+    matched_ { arg i;
+
+        matched = i;
+        if ( (matched_led != nil), {
+            if ( (matched == 0), { matched_led.off; });
+            if ( (matched == 1), { matched_led.on; });
+        });
+    }
 
     val_{ arg v;
         val = v;
