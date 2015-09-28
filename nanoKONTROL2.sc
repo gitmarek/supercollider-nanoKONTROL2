@@ -113,9 +113,9 @@ NanoKONTROL2 {
         knobs = Array.fill(num_of_scenes, {Array.fill(nk2num, { arg i; NanoKONTROL2Knob(server, knobs_init_val) }) });
         faders = Array.fill(num_of_scenes, {Array.fill(nk2num, { arg i; NanoKONTROL2Fader(server, faders_init_val) }) });
 
-        sbuttons = Array.fill(nk2num, { arg i; NanoKONTROL2Button(sbutton_note + i, outport) });
-        mbuttons = Array.fill(nk2num, { arg i; NanoKONTROL2Button(mbutton_note + i, outport) });
-        rbuttons = Array.fill(nk2num, { arg i; NanoKONTROL2Button(rbutton_note + i, outport) });
+        sbuttons = Array.fill(num_of_scenes, {Array.fill(nk2num, { arg i; NanoKONTROL2Button(sbutton_note + i, outport) }) });
+        mbuttons = Array.fill(num_of_scenes, {Array.fill(nk2num, { arg i; NanoKONTROL2Button(mbutton_note + i, outport) }) });
+        rbuttons = Array.fill(num_of_scenes, {Array.fill(nk2num, { arg i; NanoKONTROL2Button(rbutton_note + i, outport) }) });
 
         mididef_kf_key = "nK2_" ++ srcID.asString ++ "_default";
         this.nK2_kf_mididef(mididef_kf_key);
@@ -126,17 +126,17 @@ NanoKONTROL2 {
         if ( (outport != nil), {
             Task( {
                 8.do{ arg i;
-                    sbuttons[i].led.blink;
+                    sbuttons[scene][i].led.blink;
                     0.05.wait;
                 };
                 0.5.wait;
                 8.do{ arg i;
-                    mbuttons[7-i].led.blink;
+                    mbuttons[scene][7-i].led.blink;
                     0.05.wait;
                 };
                 0.5.wait;
                 8.do{ arg i;
-                    rbuttons[i].led.blink;
+                    rbuttons[scene][i].led.blink;
                     0.05.wait;
                 };
             }).play;
@@ -176,7 +176,7 @@ NanoKONTROL2 {
             // S button
             if ( (cc >= sbutton_note) && (cc <= (sbutton_note + nk2num - 1)), {
 
-                sbuttons[cc - sbutton_note].val = val.linlin(0,127,0,1);
+                sbuttons[scene][cc - sbutton_note].val = val.linlin(0,127,0,1);
 
                 knobs[scene][cc - sbutton_note].tmpSval  = knobs[scene][cc - sbutton_note].prev;
                 faders[scene][cc - sbutton_note].tmpSval = faders[scene][cc - sbutton_note].prev;
@@ -192,13 +192,13 @@ NanoKONTROL2 {
             // M button
             if ( (cc >= mbutton_note) && (cc <= (mbutton_note + nk2num - 1)), {
 
-                mbuttons[cc - mbutton_note].val = val.linlin(0,127,0,1);
+                mbuttons[scene][cc - mbutton_note].val = val.linlin(0,127,0,1);
 
             });
 
             // R button
             if ( (cc >= rbutton_note) && (cc <= (rbutton_note + nk2num - 1)), {
-                rbuttons[cc - rbutton_note].val = val.linlin(0,127,0,1);
+                rbuttons[scene][cc - rbutton_note].val = val.linlin(0,127,0,1);
 
                 if ( (val == 0), {
                     // then it must have been pressed and released just now
@@ -215,19 +215,19 @@ NanoKONTROL2 {
 
                     var p = val.linlin(0,127,-1,1);
 
-                    if ( (rbuttons[cc - knobs_note].val == 1), {
+                    if ( (rbuttons[scene][cc - knobs_note].val == 1), {
                         // TODO: smooth the randomness a little bit
                         p = 1.0.rand;
                     });
 
-                    if ( (sbuttons[cc - knobs_note].val == 1), {
+                    if ( (sbuttons[scene][cc - knobs_note].val == 1), {
                         p = (val.linlin(0,127,-1,1) - knobs[scene][cc - knobs_note].tmpSval)*button_slow_factor +
                              knobs[scene][cc - knobs_note].tmpSval;
                         p = max(-1,p);
                         p = min(p, 1);
                     });
 
-                    if ( (mbuttons[cc - knobs_note].val == 0), {
+                    if ( (mbuttons[scene][cc - knobs_note].val == 0), {
                         knobs[scene][cc - knobs_note].prev = p;
 
                        if( (this.verbose == 1), {
@@ -255,18 +255,18 @@ NanoKONTROL2 {
 
                     var p = val.linlin(0,127,0,1);
 
-                    if ( (rbuttons[cc - faders_note].val == 1), {
+                    if ( (rbuttons[scene][cc - faders_note].val == 1), {
                         p = 1.0.rand;
                     });
 
-                    if ( (sbuttons[cc - faders_note].val == 1), {
+                    if ( (sbuttons[scene][cc - faders_note].val == 1), {
                         p = (val.linlin(0,127,0,1) - faders[scene][cc - faders_note].tmpSval)*button_slow_factor +
                              faders[scene][cc - faders_note].tmpSval;
                         p = max(0,p);
                         p = min(p, 1);
                     });
 
-                    if ( (mbuttons[cc - faders_note].val == 0), {
+                    if ( (mbuttons[scene][cc - faders_note].val == 0), {
                         faders[scene][cc - faders_note].prev = p;
 
                         if( (this.verbose == 1), {
