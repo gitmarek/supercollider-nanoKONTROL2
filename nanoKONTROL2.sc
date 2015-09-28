@@ -90,8 +90,7 @@ NanoKONTROL2 {
 
     <sbuttons, <mbuttons, <rbuttons,
 
-
-    key_mididef;
+    mididef_kf_key;
 
 
     // change this only if you writing a class for
@@ -148,11 +147,16 @@ NanoKONTROL2 {
         mbuttons = Array.fill(nk2num, { arg i; NanoKONTROL2Button(0) });
         rbuttons = Array.fill(nk2num, { arg i; NanoKONTROL2Button(0) });
 
-        key_mididef = "nK2" ++ srcID;
+        mididef_kf_key = "nK2_" ++ srcID.asString ++ "_default";
+        this.nK2_kf_mididef(mididef_kf_key);
+    }
 
-        // ------------------------------------------------------------
-        // define MIDIdef for knobs and faders
-        MIDIdef.cc(key_mididef,  { arg val, cc, chan, src;
+
+    // ------------------------------------------------------------
+    // define default MIDIdef for knobs and faders
+    nK2_kf_mididef { arg key;
+
+        MIDIdef.cc(key,  { arg val, cc, chan, src;
 
             // change the scene
             if ( (cc == scene_dim_note) || (cc == scene_inc_note) && (val == 127), {
@@ -289,13 +293,12 @@ NanoKONTROL2 {
 
             });
 
-        }, srcID: srcID); // end of MIDIdef for knobs and faders
-        // ------------------------------------------------------------
+        }, srcID: srcID);
+    } // end of MIDIdef for knobs and faders
+    // ------------------------------------------------------------
 
-    }
 
-
-    dumpValues {
+    dumpAll {
 
         ("nK2, srcID: " ++ srcID.asString).postln;
 
@@ -308,7 +311,7 @@ NanoKONTROL2 {
 
 
     free {
-        MIDIdef(key_mididef).free;
+        MIDIdef(mididef_kf_key).free;
 
         num_of_scenes.do{ arg i;
                     nk2num.do{ arg j;
