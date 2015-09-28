@@ -33,8 +33,9 @@ recompile class library (Ctrl+Shift+L).
 
 
 ## Usage within SuperCollider
-The code reads controller MIDI data and maps them linearly (0,127) -> (0,1)
-to buses at control rate.
+The code reads controller MIDI data and maps them linearly to buses
+at control rate.  The data from faders is mapped to the interval `[0,1]`;
+whereas the data from knobs to `[-1,1]`.
 
 Create a new instance of the class: `n = NanoKONTROL2(server)`.
 Access knobs and faders by n.faders and n.knobs, two-dimensional arrays, for
@@ -68,10 +69,10 @@ n = NanoKONTROL2(s, srcID: ~nK2srcID);
 Ndef(
      \NK2_test, { | freq = 440 |
          Out.ar(0, Pan2.ar(
-             SinOsc.ar( freq,
-                 mul: n.faders[0][3].kr.linexp(0,1,0.01,1)
+            SinOsc.ar( n.knobs[0][1].kr*400 + 800,
+                 mul: n.faders[0][3].kr.linexp(0,1,0.001,1)
              ),
-             pos: n.knobs[2][2].kr*2 - 1)
+             pos: n.knobs[2][2].kr)
          );
      }
 );

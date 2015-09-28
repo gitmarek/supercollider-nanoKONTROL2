@@ -1,76 +1,31 @@
 // ----------------------------------------------------------------------------
 // KORG nanoKONTROL 2
 //
-// Read controller MIDI data and map them linearly (0,127) -> (0,1)
-// to buses at control rate.
+// See README.md for more information.
+// -----------------------------------
 //
-// If a scene changes (by pressing Track buttons) then the knobs or faders
-// have to be set at the previous value for that scene, so they do not
-// jump discontinuously.
-// The meaning of buttons (S, M, R) is somewhat unusual:
-//   1. if S (slow) is pressed, then the adjacent fader or knob reacts to
-//      changes very slowly (button_slow_factor = 0.1 times slower) around
-//      the previous value;
-//   2. if M (mute) is pressed, then the adjacent fader or knob does not react
-//      to changes until the button is released; then it assumes a new value
-//      in a discontinuous way;
-//   3. if R (random) is pressed and adjacent knob of fader is touched at
-//      the right value, then it assumes a random value from (0,1).
+// The MIT License (MIT)
 //
-// The M button takes precedence over S, which in turn takes precedence over R.
+// Copyright (c) 2015 Marek Miller
 //
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
-// This class assumes that MIDI interface is already connected (through e.g.
-// MIDIIn.connectAll) and you know the srcID number of the port your device is
-// connected to. See example below.
-// ----------------------------------------------------------------------------
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
 //
-// How to use it
-// -------------
-// Create a new instance of the class: n = NanoKONTROL2(server).
-// Access knobs and faders by n.faders and n.knobs, two-dimensional arrays, for
-// which the first index denotes the scene number. You can treat each element
-// of the arrays as a UGen at control rate by adding .kr message.  Use it in
-// your SynthDefs. For instance, n.knobs[2][7].kr gives you current value of
-// the 8th knob in the 3rd scene.
-//
-//
-// Example (assuming you are happy with all default values):
-//
-// (
-// o = Server.internal.options;
-// Server.default = s = Server.internal.reboot;
-// )
-//
-// MIDIClient.init;
-// MIDIIn.connectAll;
-// MIDIClient.sources;
-// // suppose your device is connected to port 3:
-// ~nK2srcID = MIDIClient.sources[3].uid; // this is your srcID number.
-// MIDIFunc.trace;
-//
-// n = NanoKONTROL2(s, srcID: ~nK2srcID);
-//
-// (
-// Ndef(
-//     \NK2_test, { | freq = 440 |
-//         Out.ar(0, Pan2.ar(
-//             SinOsc.ar( freq,
-//                 mul: n.faders[0][3].kr.linexp(0,1,0.0005,1)
-//             ),
-//             pos: n.knobs[2][2].kr.linlin(0,1 ,-1,1) )
-//         );
-//     }
-// );
-// )
-// Ndef(\NK2_test).pause;
-// Ndef(\NK2_test).resume;
-// Ndef(\NK2_test).free;
-//
-// n.free;
-// s.quit;
-//
-// ----------------------------------------------------------------------------
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+// ------------------------------------------------------------------------------
 
 
 
@@ -219,7 +174,7 @@ NanoKONTROL2 {
 
                if( ( knobs[scene][cc - knobs_note].matched == 1), {
 
-                    var p = val.linlin(0,127,0,1);
+                    var p = val.linlin(0,127,-1,1);
 
                     if ( (rbuttons[cc - knobs_note].val == 1), {
                         // TODO: smooth the randomness a little bit
@@ -227,9 +182,9 @@ NanoKONTROL2 {
                     });
 
                     if ( (sbuttons[cc - knobs_note].val == 1), {
-                        p = (val.linlin(0,127,0,1) - knobs[scene][cc - knobs_note].tmpSval)*button_slow_factor +
+                        p = (val.linlin(0,127,-1,1) - knobs[scene][cc - knobs_note].tmpSval)*button_slow_factor +
                              knobs[scene][cc - knobs_note].tmpSval;
-                        p = max(0,p);
+                        p = max(-1,p);
                         p = min(p, 1);
                     });
 
@@ -244,7 +199,7 @@ NanoKONTROL2 {
                 }, {
 
 
-                    if( ( (val + 3) >= knobs[scene][cc - knobs_note].prev.linlin(0,1,0,127) ) && ((val - 3) <= knobs[scene][cc - knobs_note].prev.linlin(0,1,0,127) ), {
+                    if( ( (val + 3) >= knobs[scene][cc - knobs_note].prev.linlin(-1,1,0,127) ) && ((val - 3) <= knobs[scene][cc - knobs_note].prev.linlin(-1,1,0,127) ), {
                             knobs[scene][cc - knobs_note].matched = 1;
                     });
 
