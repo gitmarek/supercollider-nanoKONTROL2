@@ -16,7 +16,7 @@ data coming from the device have standard values.  In order to do so, disconnect
 the device, then press three buttons: Cycle, and two Tracks, and connect it
 again while holding the buttons.  You will see the LEDs of the transport buttons
 blink.  Do not disconnect the device until the LEDs stop blinking, which usually
-lasts about two seconds.
+lasts about a second.
 
 The meaning of buttons (S, M, R) is rather unusual:
 
@@ -46,7 +46,7 @@ recompile class library (Ctrl+Shift+L).
 ## Usage within SuperCollider
 First, connect the device by e.g. `MIDIIn.connectAll;`, find the uid of the
 port the controller is connected to and specify it as a `srcID` argument.
-If nanoKONTROL2 is connected to one of the out ports by i.e.
+If nanoKONTROL2 is connected to one of the out ports by e.g.
 `MIDIOut.connect(outport, device)`, where `device` is its position in the
 `MIDIClient.destinations` list, then you can specify the outport number as well
 in order to enable LED functionality.  The class will try to put nanoKONTROL2
@@ -60,10 +60,18 @@ whereas the data from knobs to `[-1,1]`.
 
 Create a new instance of the class: `n = NanoKONTROL2(server)`.
 Access knobs and faders by `n.faders` and `n.knobs`, two-dimensional arrays,
-for which the first index denotes the scene number. You can treat each element
+for which the first index denotes the scene number.  You can treat each element
 of the arrays as a UGen at control rate by adding `.kr` message.  Use it in
-your SynthDefs. For instance, `n.knobs[2][7].kr` gives you current value of
+your SynthDefs.  For instance, `n.knobs[2][7].kr` gives you current value of
 the 8th knob in the 3rd scene.
+
+For each button key: `backwards`, `forwards`, `stop`, `play` and `rec`,
+the user can specify a function `key_action(scene)`, as well as the global one:
+`transport_action(scene)`.  Each time a transport button is pressed,
+the `transport_action()` function is evaluated first, and then the appropriate
+`key_action()` function with the current scene number passed as an argument.
+The transport buttons are instances of the class `NanoKONTROL2Button` and
+can be accessed as `key_button`.
 
 **Keep in mind that as long as the software version is less then 1.0,**
 **backward compatibility could be broken from one 0.x version to the next.**
@@ -73,23 +81,17 @@ the 8th knob in the 3rd scene.
 
 ```SuperCollider
 
-(
-o = Server.internal.options;
-Server.default = s = Server.internal.reboot;
-)
-
 MIDIClient.init;
+// MIDIFunc.trace;
 MIDIIn.connectAll;
-MIDIClient.sources;
-// suppose your device is connected to port 3:
-~nK2srcID = MIDIClient.sources[3].uid; // this is your srcID number.
-MIDIFunc.trace;
 
-MIDIClient.destinations;
-// suppose your device is sencond on that list.
-MIDIOut.connect(0,1);
+~nK2srcID = MIDIIn.findPort("nanoKONTROL2-nanoKONTROL2 MIDI 1","nanoKONTROL2-nanoKONTROL2 MIDI 1").uid;
+~nK2MIDIOut = MIDIOut.newByName("nanoKONTROL2-nanoKONTROL2 MIDI 1","nanoKONTROL2-nanoKONTROL2 MIDI 1");
+~nk2OutPort = 0;
 
-n = NanoKONTROL2(s, srcID: ~nK2srcID, outport: 0);
+MIDIOut.connect(~nk2OutPort,~nK2MIDIOut.port);
+
+n = NanoKONTROL2(s, srcID: ~nK2scrID, outport: ~nk2OutPort);
 
 (
 Ndef(
@@ -116,6 +118,6 @@ Marek Miller, <marek.l.miller@gmail.com>
 
 
 ## License
-This software licensed is under the MIT license. Feel free to use it however
+This software licensed is under the MIT license.  Feel free to use it however
 you like!  For more information, see [LICENSE](./LICENSE).
 

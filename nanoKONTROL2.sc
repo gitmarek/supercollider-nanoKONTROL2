@@ -46,7 +46,17 @@ NanoKONTROL2 {
 
     <sbuttons, <mbuttons, <rbuttons,
 
-    mididef_kf_key,
+    <backwards_button, <forwards_button,
+    <stop_button, <play_button, <rec_button,
+
+    <>transport_action = nil,
+    <>backwards_action = nil,
+    <>forwards_action  = nil,
+    <>stop_action = nil,
+    <>play_action = nil,
+    <>rec_action  = nil,
+
+    mididef_key,
 
     <outport = nil,
     <midiOut = nil;
@@ -54,17 +64,26 @@ NanoKONTROL2 {
 
 
 
-    // change this only if you writing a class for
+    // change this only if you are writing a class for
     // nanoKONTROL3 with 9 knobs and faders
-    const
-    nk2num = 8,
-    knobs_note  = 16,
-    faders_note = 0,
-    sbutton_note = 32,
-    mbutton_note = 48,
-    rbutton_note = 64,
-    scene_dim_note = 58,
-    scene_inc_note = 59;
+    var
+    <nk2num = 8,
+    <knobs_note  = 16,
+    <faders_note = 0,
+    <sbutton_note = 32,
+    <mbutton_note = 48,
+    <rbutton_note = 64,
+    <scene_dim_note = 58,
+    <scene_inc_note = 59,
+    <backwards_note = 43,
+    <forwards_note = 44,
+    <stop_note = 42,
+    <play_note = 41,
+    <rec_note = 45,
+    <cycle_note = 46,
+    <set_note = 60,
+    <marker_left_note = 61,
+    <marker_right_note = 62;
 
 
 
@@ -115,14 +134,20 @@ NanoKONTROL2 {
         mbuttons = Array.fill(num_of_scenes, {arg i; Array.fill(nk2num, { arg j; NanoKONTROL2Button(mbutton_note + j, outport) }) });
         rbuttons = Array.fill(num_of_scenes, {arg i; Array.fill(nk2num, { arg j; NanoKONTROL2Button(rbutton_note + j, outport) }) });
 
+        backwards_button = NanoKONTROL2Button(backwards_note, outport);
+        forwards_button  = NanoKONTROL2Button(forwards_note, outport);
+        stop_button =  NanoKONTROL2Button(stop_note, outport);
+        play_button =  NanoKONTROL2Button(play_note, outport);
+        rec_button  =  NanoKONTROL2Button(rec_note, outport);
+
         knobs = Array.fill(num_of_scenes, { arg i; Array.fill(nk2num, { arg j; NanoKONTROL2Knob(server, knobs_init_val, matched_led: sbuttons[i][j].led) }) });
         faders = Array.fill(num_of_scenes, { arg i; Array.fill(nk2num, { arg j; NanoKONTROL2Fader(server, faders_init_val, matched_led: mbuttons[i][j].led) }) });
 
         knobs_lastval = Array.fill(nk2num, { arg j; 0 });
         faders_lastval = Array.fill(nk2num, { arg j; 0 });
 
-        mididef_kf_key = "nK2_" ++ srcID.asString ++ "_default";
-        this.nK2_kf_mididef(mididef_kf_key);
+        mididef_key = "nK2_" ++ srcID.asString ++ "_default";
+        this.nK2_mididef(mididef_key);
 
         // Welcoming lights!
         if ( (outport != nil), {
@@ -150,7 +175,7 @@ NanoKONTROL2 {
 
     // ------------------------------------------------------------
     // define default MIDIdef for knobs and faders
-    nK2_kf_mididef { arg key;
+    nK2_mididef { arg key;
 
         MIDIdef.cc(key,  { arg val, cc, chan, src;
 
@@ -308,6 +333,65 @@ NanoKONTROL2 {
 
             });
 
+
+            // Read current values of stop, play, rec buttons and switch leds appropriately
+            // Execute custom action.
+            case
+
+            { cc == backwards_note } {
+                backwards_button.val = val;
+
+                if (val == 127) {
+                    this.transport_action.value(scene);
+                    this.backwards_action.value(scene);
+                };
+
+                backwards_button.led.change;
+            }
+
+            { cc == forwards_note } {
+                forwards_button.val = val;
+
+                if (val == 127) {
+                    this.transport_action.value(scene);
+                    this.forwards_action.value(scene);
+                };
+
+                forwards_button.led.change;
+            }
+
+            { cc == stop_note } {
+                stop_button.val = val;
+
+                if (val == 127) {
+                    this.transport_action.value(scene);
+                    this.stop_action.value(scene);
+                    play_button.led.off;
+                    rec_button.led.off;
+                };
+
+                stop_button.led.change;
+            }
+
+            { cc == play_note } {
+                play_button.val = val;
+
+                if (val == 127) {
+                    this.transport_action.value(scene);
+                    this.play_action.value(scene);
+                    play_button.led.change;
+                };
+            }
+
+            { cc == rec_note  } {
+                rec_button.val = val;
+                if (val == 127) {
+                    this.transport_action.value(scene);
+                    this.rec_action.value(scene);
+                    rec_button.led.change;
+                };
+            };
+
         }, srcID: srcID);
     } // end of MIDIdef for knobs and faders
     // ------------------------------------------------------------
@@ -389,7 +473,7 @@ NanoKONTROL2 {
 
 
     free {
-        MIDIdef(mididef_kf_key).free;
+        MIDIdef(mididef_key).free;
 
         num_of_scenes.do{ arg i;
                     nk2num.do{ arg j;
